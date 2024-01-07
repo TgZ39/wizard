@@ -73,8 +73,8 @@ impl Card {
     /// # use wizard::wizard::card::CardColor;
     /// let card_1: String = Card::Fool.name(); // "Fool"
     /// let card_2: String = Card::Wizard.name(); // "Wizard"
-    /// let card_3: String = Card::Number(9, CardColor::YELLOW); // "Yellow 9"
-    /// let card_3: String = Card::Number(1, CardColor::BLUE); // "Blue 1"
+    /// let card_3: String = Card::Number(9, CardColor::YELLOW).name(); // "Yellow 9"
+    /// let card_3: String = Card::Number(1, CardColor::BLUE).name(); // "Blue 1"
     /// ```
     pub fn name(&self) -> String {
         match self {
@@ -89,71 +89,167 @@ impl Card {
         }
     }
 
-    /// Determines the *winning* `Player` in a round of standart Wizard **with the *main color* considered.**
+    /// Determines the *winning* `Player` in a round of standard Wizard **with the *main color* considered.**
     ///
     /// # Panics
     ///
     /// This function panics if the given vector is empty as the winner cannot be determined.
-    pub fn evaluate_winner(
-        cards: Vec<(Card, Player)>,
-        option_main_color: Option<CardColor>,
-    ) -> Player {
+    pub fn evaluate_winner(cards: Vec<(Card, Player)>, main_color: Option<CardColor>) -> Player {
         if cards.is_empty() {
             panic!("Input for this function was empty.");
         }
 
-        let mut winner = cards[0].clone();
+        let mut winner: (Card, Player) = cards[0].clone();
 
-        // determine winner without main color
-        if option_main_color.is_none() {
-            for (card, player) in cards {
-                if card.value() > winner.0.value() {
-                    winner.0 = card;
-                    winner.1 = player;
-                }
+        let prio_color: Option<CardColor>;
+
+        {
+            let mut cards_only: Vec<Card> = Vec::new();
+            for card in cards.clone() {
+                cards_only.push(card.0);
             }
-
-            return winner.1;
+            prio_color = Card::get_prio_color(cards_only);
         }
 
-        let main_color = option_main_color.unwrap();
-
-        // determine winner with main color
-        for (card, player) in cards {
-            match (card, winner.0) {
-                (Card::Number(value, color), Card::Number(winner_value, winner_color)) => {
-                    if color == main_color && winner_color != main_color {
-                        winner.0 = card;
-                        winner.1 = player;
-                    } else if color == main_color
-                        && winner_color == main_color
-                        && value > winner_value
-                    {
-                        winner.0 = card;
-                        winner.1 = player;
-                    } else if color != main_color
-                        && winner_color != main_color
-                        && value > winner_value
-                    {
-                        winner.0 = card;
-                        winner.1 = player;
+        match (main_color, prio_color) {
+            (Some(main_color), Some(prio_color)) => {
+                for (new_card, new_player) in cards.clone() {
+                    match (new_card, winner.0) {
+                        (Card::Wizard, _) => return new_player,
+                        (Card::Number(_, _), Card::Fool) => {
+                            winner.0 = new_card;
+                            winner.1 = new_player;
+                        }
+                        (
+                            Card::Number(new_value, new_color),
+                            Card::Number(old_value, old_color),
+                        ) => {
+                            if new_color == main_color
+                                && old_color == main_color
+                                && new_value > old_value
+                            {
+                                // same color
+                                winner.0 = new_card;
+                                winner.1 = new_player;
+                            } else if new_color == main_color && old_color != main_color {
+                                // higher value color
+                                winner.0 = new_card;
+                                winner.1 = new_player;
+                            } else if new_color == prio_color
+                                && old_color != prio_color
+                                && old_color != main_color
+                            {
+                                // higher value color
+                                winner.0 = new_card;
+                                winner.1 = new_player;
+                            } else if new_color == prio_color
+                                && old_color == prio_color
+                                && new_value > old_value
+                            {
+                                // same color
+                                winner.0 = new_card;
+                                winner.1 = new_player;
+                            } else if new_color != main_color
+                                && new_color != prio_color
+                                && old_color != main_color
+                                && old_color != prio_color
+                                && new_value > old_value
+                            {
+                                // same value color
+                                winner.0 = new_card;
+                                winner.1 = new_player;
+                            }
+                        }
+                        (_, _) => {}
                     }
                 }
-                (Card::Wizard, Card::Fool) => {
-                    winner.0 = card;
-                    winner.1 = player;
+            }
+            (None, Some(prio_color)) => {
+                for (new_card, new_player) in cards.clone() {
+                    match (new_card, winner.0) {
+                        (Card::Wizard, _) => return new_player,
+                        (Card::Number(_, _), Card::Fool) => {
+                            winner.0 = new_card;
+                            winner.1 = new_player;
+                        }
+                        (
+                            Card::Number(new_value, new_color),
+                            Card::Number(old_value, old_color),
+                        ) => {
+                            if new_color == prio_color && old_color != prio_color {
+                                winner.0 = new_card;
+                                winner.1 = new_player;
+                            } else if new_color == prio_color
+                                && old_color == prio_color
+                                && new_value > old_value
+                            {
+                                winner.0 = new_card;
+                                winner.1 = new_player;
+                            } else if new_color != prio_color
+                                && old_color != prio_color
+                                && new_value > old_value
+                            {
+                                winner.0 = new_card;
+                                winner.1 = new_player;
+                            }
+                        }
+                        (_, _) => {}
+                    }
                 }
-                (Card::Wizard, Card::Number(_, _)) => {
-                    winner.0 = card;
-                    winner.1 = player;
+            }
+            (Some(main_color), None) => {
+                for (new_card, new_player) in cards.clone() {
+                    match (new_card, winner.0) {
+                        (Card::Wizard, _) => return new_player,
+                        (Card::Number(_, _), Card::Fool) => {
+                            winner.0 = new_card;
+                            winner.1 = new_player;
+                        }
+                        (
+                            Card::Number(new_value, new_color),
+                            Card::Number(old_value, old_color),
+                        ) => {
+                            if new_color == main_color && old_color != main_color {
+                                winner.0 = new_card;
+                                winner.1 = new_player;
+                            } else if new_color == main_color
+                                && old_color == main_color
+                                && new_value > old_value
+                            {
+                                winner.0 = new_card;
+                                winner.1 = new_player;
+                            } else if new_color != main_color
+                                && old_color != main_color
+                                && new_value > old_value
+                            {
+                                winner.0 = new_card;
+                                winner.1 = new_player;
+                            }
+                        }
+                        (_, _) => {}
+                    }
                 }
-                (Card::Number(_, _), Card::Fool) => {
-                    winner.0 = card;
-                    winner.1 = player;
+            }
+            (None, None) => {
+                for (new_card, new_player) in cards.clone() {
+                    match (new_card, winner.0) {
+                        (Card::Wizard, _) => return new_player,
+                        (Card::Number(_, _), Card::Fool) => {
+                            winner.0 = new_card;
+                            winner.1 = new_player;
+                        }
+                        (Card::Number(new_value, _), Card::Number(old_value, _)) => {
+                            if new_value > old_value {
+                                winner.0 = new_card;
+                                winner.1 = new_player;
+                            }
+                        }
+                        (_, _) => {}
+                    }
                 }
-                (_, _) => {}
             }
         }
+
         winner.1
     }
 
@@ -168,9 +264,9 @@ impl Card {
     /// cards.push(Card::Fool);
     /// cards.push(Card::Number(5, CardColor::YELLOW));
     /// cards.push(Card::Number(8, CardColor::GREEN));
-    /// let main_color = Card::get_forced_color(cards); // CardColor::YELLOW
+    /// let main_color = Card::get_prio_color(cards); // CardColor::YELLOW
     /// ```
-    pub fn get_forced_color(cards: Vec<Card>) -> Option<CardColor> {
+    pub fn get_prio_color(cards: Vec<Card>) -> Option<CardColor> {
         for card in cards {
             match card {
                 Card::Fool => {}

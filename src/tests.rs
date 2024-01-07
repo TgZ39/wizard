@@ -139,7 +139,7 @@ mod tests {
         check_winner_with_color(&case_6, &CardColor::YELLOW, &p2);
         check_winner_with_color(&case_6, &CardColor::BLUE, &p1);
         check_winner_with_color(&case_6, &CardColor::RED, &p3);
-        check_winner_with_color(&case_6, &CardColor::GREEN, &p1);
+        check_winner_with_color(&case_6, &CardColor::GREEN, &p2);
 
         let mut case_7: Vec<(Card, Player)> = Vec::new();
 
@@ -150,7 +150,7 @@ mod tests {
         case_7.push((Card::Number(10, CardColor::YELLOW), p2.clone()));
         case_7.push((Card::Fool, p3.clone()));
 
-        check_winner_without_color(&case_6, &p1);
+        check_winner_without_color(&case_6, &p2);
 
         let mut case_8: Vec<(Card, Player)> = Vec::new();
 
@@ -159,13 +159,13 @@ mod tests {
 
         check_winner_with_color(&case_8, &CardColor::BLUE, &p1);
         check_winner_with_color(&case_8, &CardColor::RED, &p2);
-        check_winner_without_color(&case_8,  &p1);
+        check_winner_without_color(&case_8, &p1);
     }
 
     #[test]
     fn get_forced_color() {
         fn check(cards: &Vec<Card>, correct_color: Option<CardColor>) {
-            let eval_color = Card::get_forced_color(cards.clone());
+            let eval_color = Card::get_prio_color(cards.clone());
             assert_eq!(
                 eval_color,
                 correct_color,
