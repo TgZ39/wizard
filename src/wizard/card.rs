@@ -95,12 +95,18 @@ impl Card {
     ///
     /// This function panics if the given vector is empty as the winner cannot be determined.
     pub fn evaluate_winner(cards: Vec<(Card, Player)>, main_color: Option<CardColor>) -> Player {
+
         if cards.is_empty() {
             panic!("Input for this function was empty.");
         }
 
         let mut winner: (Card, Player) = cards[0].clone();
-
+        macro_rules! transfer_winner {
+            ($card:expr; $player:expr) => {
+                winner.0 = $card;
+                winner.1 = $player;
+            };
+        }
         let prio_color: Option<CardColor>;
 
         {
@@ -129,26 +135,22 @@ impl Card {
                                 && new_value > old_value
                             {
                                 // same color
-                                winner.0 = new_card;
-                                winner.1 = new_player;
+                                transfer_winner!(new_card; new_player);
                             } else if new_color == main_color && old_color != main_color {
                                 // higher value color
-                                winner.0 = new_card;
-                                winner.1 = new_player;
+                                transfer_winner!(new_card; new_player);
                             } else if new_color == prio_color
                                 && old_color != prio_color
                                 && old_color != main_color
                             {
                                 // higher value color
-                                winner.0 = new_card;
-                                winner.1 = new_player;
+                                transfer_winner!(new_card; new_player);
                             } else if new_color == prio_color
                                 && old_color == prio_color
                                 && new_value > old_value
                             {
                                 // same color
-                                winner.0 = new_card;
-                                winner.1 = new_player;
+                                transfer_winner!(new_card; new_player);
                             } else if new_color != main_color
                                 && new_color != prio_color
                                 && old_color != main_color
@@ -156,8 +158,7 @@ impl Card {
                                 && new_value > old_value
                             {
                                 // same value color
-                                winner.0 = new_card;
-                                winner.1 = new_player;
+                                transfer_winner!(new_card; new_player);
                             }
                         }
                         (_, _) => {}
@@ -169,28 +170,24 @@ impl Card {
                     match (new_card, winner.0) {
                         (Card::Wizard, _) => return new_player,
                         (Card::Number(_, _), Card::Fool) => {
-                            winner.0 = new_card;
-                            winner.1 = new_player;
+                            transfer_winner!(new_card; new_player);
                         }
                         (
                             Card::Number(new_value, new_color),
                             Card::Number(old_value, old_color),
                         ) => {
                             if new_color == prio_color && old_color != prio_color {
-                                winner.0 = new_card;
-                                winner.1 = new_player;
+                                transfer_winner!(new_card; new_player);
                             } else if new_color == prio_color
                                 && old_color == prio_color
                                 && new_value > old_value
                             {
-                                winner.0 = new_card;
-                                winner.1 = new_player;
+                                transfer_winner!(new_card; new_player);
                             } else if new_color != prio_color
                                 && old_color != prio_color
                                 && new_value > old_value
                             {
-                                winner.0 = new_card;
-                                winner.1 = new_player;
+                                transfer_winner!(new_card; new_player);
                             }
                         }
                         (_, _) => {}
@@ -202,28 +199,24 @@ impl Card {
                     match (new_card, winner.0) {
                         (Card::Wizard, _) => return new_player,
                         (Card::Number(_, _), Card::Fool) => {
-                            winner.0 = new_card;
-                            winner.1 = new_player;
+                            transfer_winner!(new_card; new_player);
                         }
                         (
                             Card::Number(new_value, new_color),
                             Card::Number(old_value, old_color),
                         ) => {
                             if new_color == main_color && old_color != main_color {
-                                winner.0 = new_card;
-                                winner.1 = new_player;
+                                transfer_winner!(new_card; new_player);
                             } else if new_color == main_color
                                 && old_color == main_color
                                 && new_value > old_value
                             {
-                                winner.0 = new_card;
-                                winner.1 = new_player;
+                                transfer_winner!(new_card; new_player);
                             } else if new_color != main_color
                                 && old_color != main_color
                                 && new_value > old_value
                             {
-                                winner.0 = new_card;
-                                winner.1 = new_player;
+                                transfer_winner!(new_card; new_player);
                             }
                         }
                         (_, _) => {}
@@ -235,13 +228,11 @@ impl Card {
                     match (new_card, winner.0) {
                         (Card::Wizard, _) => return new_player,
                         (Card::Number(_, _), Card::Fool) => {
-                            winner.0 = new_card;
-                            winner.1 = new_player;
+                            transfer_winner!(new_card; new_player);
                         }
                         (Card::Number(new_value, _), Card::Number(old_value, _)) => {
                             if new_value > old_value {
-                                winner.0 = new_card;
-                                winner.1 = new_player;
+                                transfer_winner!(new_card; new_player);
                             }
                         }
                         (_, _) => {}

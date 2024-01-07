@@ -160,6 +160,22 @@ mod tests {
         check_winner_with_color(&case_8, &CardColor::BLUE, &p1);
         check_winner_with_color(&case_8, &CardColor::RED, &p2);
         check_winner_without_color(&case_8, &p1);
+
+        // write more tests for this function
+        let mut case_9: Vec<(Card, Player)> = Vec::new();
+
+        case_9.push((Card::Number(4, CardColor::GREEN), p1.clone()));
+        case_9.push((Card::Number(12, CardColor::BLUE), p2.clone()));
+        case_9.push((Card::Number(3, CardColor::GREEN), p3.clone()));
+        case_9.push((Card::Number(6, CardColor::BLUE), p1.clone()));
+        case_9.push((Card::Number(7, CardColor::GREEN), p2.clone()));
+        case_9.push((Card::Number(13, CardColor::RED), p3.clone()));
+
+        check_winner_with_color(&case_9, &CardColor::BLUE, &p2);
+        check_winner_with_color(&case_9, &CardColor::GREEN, &p2);
+        check_winner_with_color(&case_9, &CardColor::RED, &p3);
+        check_winner_with_color(&case_9, &CardColor::YELLOW, &p2);
+        check_winner_without_color(&case_9, &p2);
     }
 
     #[test]
