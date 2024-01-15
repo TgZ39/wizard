@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod tests {
+    use crate::wizard::game::Game;
     use crate::wizard::{
         card::{Card, CardColor},
         player::Player,
@@ -45,7 +46,7 @@ mod tests {
             name: name,
             cards: Vec::new(),
             guess_stitches: 0,
-            actual_stiches: 0,
+            actual_stitches: 0,
         }
     }
 
@@ -176,6 +177,15 @@ mod tests {
         check_winner_with_color(&case_9, &CardColor::RED, &p3);
         check_winner_with_color(&case_9, &CardColor::YELLOW, &p2);
         check_winner_without_color(&case_9, &p2);
+
+        let mut case_10: Vec<(Card, Player)> = Vec::new();
+
+        case_10.push((Card::Number(10, CardColor::BLUE), p1.clone()));
+        case_10.push((Card::Number(13, CardColor::BLUE), p2.clone()));
+        case_10.push((Card::Number(5, CardColor::RED), p3.clone()));
+        case_10.push((Card::Wizard, p1.clone()));
+
+        check_winner_with_color(&case_10, &CardColor::YELLOW, &p1)
     }
 
     #[test]
@@ -219,5 +229,37 @@ mod tests {
         case_4.push(Card::Number(5, CardColor::RED));
 
         check(&case_4, Some(CardColor::GREEN));
+    }
+
+    #[test]
+    fn round_limit() {
+        let mut game = Game::default();
+
+        let p1 = new_player("Max".to_string());
+        let p2 = new_player("David".to_string());
+        let p3 = new_player("Karl".to_string());
+
+        game.players.push(p1);
+        game.players.push(p2);
+        game.players.push(p3);
+
+        assert_eq!(20, game.round_limit());
+
+        let p4 = new_player("Damien".to_string());
+        game.players.push(p4);
+
+        assert_eq!(15, game.round_limit());
+    }
+
+    #[test]
+    fn all_cards() {
+        let cards = Card::all_cards();
+        assert_eq!(60, cards.len());
+    }
+
+    #[test]
+    fn stitch_options() {
+        let case_1 = Game::stitch_options(5, 3, true);
+        assert_eq!(vec![1, 3, 4, 5], case_1)
     }
 }

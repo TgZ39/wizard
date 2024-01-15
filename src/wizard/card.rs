@@ -95,7 +95,6 @@ impl Card {
     ///
     /// This function panics if the given vector is empty as the winner cannot be determined.
     pub fn evaluate_winner(cards: Vec<(Card, Player)>, main_color: Option<CardColor>) -> Player {
-
         if cards.is_empty() {
             panic!("Input for this function was empty.");
         }
@@ -269,6 +268,29 @@ impl Card {
         }
 
         None
+    }
+
+    /// Returns a `Vec<Card>` with all possible cards in wizard. (sorted)
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use wizard::wizard::card::Card;
+    /// # use wizard::wizard::card::CardColor;
+    ///
+    /// let all_cards: Vec<Card> = Card::all_cards();
+    /// ```
+    pub fn all_cards() -> Vec<Card> {
+        let mut cards: Vec<Card> = Vec::new();
+        let colors: [CardColor; 4] = [CardColor::BLUE, CardColor::GREEN, CardColor::RED, CardColor::YELLOW];
+        for color in colors {
+            for value in 1..=13 {
+                cards.push(Card::Number(value, color));
+            }
+            cards.push(Card::Fool);
+            cards.push(Card::Wizard);
+        }
+        cards
     }
 }
 

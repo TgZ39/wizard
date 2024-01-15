@@ -7,7 +7,7 @@ pub struct Player {
     pub name: String,
     pub cards: Vec<Card>,
     pub guess_stitches: u32,
-    pub actual_stiches: u32,
+    pub actual_stitches: u32,
 }
 
 impl Player {
@@ -48,7 +48,7 @@ impl Player {
     /// ```rust
     /// # use wizard::wizard::player::Player;
     ///
-    /// let player: Player = Player::new(1);
+    /// let mut player: Player = Player::new(1);
     ///
     /// let player.guess_stitches = player.guess_stitches(&self, vec![1, 2, 3, 5]); // player will be asked to select his stitches
     /// ```
